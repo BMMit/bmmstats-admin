@@ -12,6 +12,8 @@ export default function RootLayout() {
       headerShown: true,
       presentation: 'modal',
       title: 'Nueva actuación',
+      sheetAllowedDetents: 'fitToContents',
+      sheetInitialDetentIndex: 'last',
       headerLeft: () => (
         <Pressable onPress={handleCaancel}><Ionicons name="chevron-back-outline" size={20} /></Pressable>
       )

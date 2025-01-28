@@ -1,10 +1,10 @@
 import { Actuacion } from '@/models/interfaces';
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { router, Stack, Tabs } from 'expo-router'
-import { useRef, useState } from 'react';
-import { InputAccessoryView, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { Picker } from '@react-native-picker/picker';
+import { useState } from 'react';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, ActionSheetIOS, Pressable, Keyboard, SafeAreaView } from 'react-native'
 import { dictionary } from '@/models/constants';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 
 const create = () => {
@@ -24,8 +24,7 @@ const create = () => {
     coverImage: ""
   });
 
-  const [isPickerVisible, setPickerVisible] = useState(false);
-  const fieldToUpdate: any = useRef('')
+  const [datePickerVisible, setDatePickerVisible] = useState(false)
 
   const fields = [
     { name: 'organizador1', label: 'Organizador', icon: 'person' },
@@ -33,90 +32,114 @@ const create = () => {
     { name: 'ciudad', label: 'Ciudad', icon: 'map' },
     { name: 'ubicacion', label: 'Ubicación', icon: 'business' }
   ]
+  const tags = ['Cancelar', 'Semana Santa', 'Glorias', 'Extraordinaria']
+  const tipos = ['Cancelar', 'Procesión', 'Concierto', 'Pregón']
 
-  const handleChangeText = (name: string, value: string) => {
+  const handleChangeText = (name: string, value: string | Date) => {
     setState({ ...state, [name]: value });
   };
 
-  const handleFocus = (fieldName: string) => {
-    fieldToUpdate.current = fieldName;
-    setPickerVisible(true)
+  const handlePicker = (field: string) => {
+    ActionSheetIOS.showActionSheetWithOptions(
+      {
+        options: field === 'tagActuacion' ? tags : tipos,
+        cancelButtonIndex: 0
+      },
+      buttonIndex => {
+        if (buttonIndex !== 0) {
+          handleChangeText(field, dictionary[field][buttonIndex - 1].value)
+        }
+      }
+    )
+  }
+
+  const handleDatePicker = () => {
+    Keyboard.dismiss()
+    setDatePickerVisible(true)
   }
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 5 }}
-        placeholder='Nueva actuación' autoFocus placeholderTextColor='gray'
-        onChangeText={(value) => handleChangeText('concepto', value)}
-      />
+    <SafeAreaView>
+      <View style={styles.container}>
+        <TextInput
+          style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 5 }}
+          placeholder='Nueva actuación' autoFocus placeholderTextColor='gray'
+          onChangeText={(value) => handleChangeText('concepto', value)}
+        />
 
-      // Text fields
-      {fields.map((field) => (
-        <View key={field.name} style={styles.section}>
-          <View style={styles.sectionLabel}>
-            <Ionicons name={field.icon as keyof typeof Ionicons.glyphMap} size={16} style={{ marginRight: 5 }} />
-            <Text style={styles.labelText}>{field.label}</Text>
+        {/* Text fields */}
+        {fields.map((field) => (
+          <View key={field.name} style={styles.section}>
+            <View style={styles.sectionLabel}>
+              <Ionicons name={field.icon as keyof typeof Ionicons.glyphMap} size={16} style={{ marginRight: 5 }} />
+              <Text style={styles.labelText}>{field.label}</Text>
+            </View>
+            <TextInput
+              placeholder='Vacío'
+              style={styles.input}
+              onChangeText={(value) => handleChangeText(field.name, value)}
+              placeholderTextColor='gray'
+            />
           </View>
-          <TextInput
-            placeholder='Vacío'
-            style={[styles.input]}
-            onChangeText={(value) => handleChangeText(field.name, value)}
-            placeholderTextColor='gray'
-            onFocus={() => handleFocus(field.name)}
-          />
+        ))}
+
+        {/* Fecha */}
+        <View style={styles.section}>
+          <View style={styles.sectionLabel}>
+            <Ionicons name='calendar' size={16} style={{ marginRight: 5 }} />
+            <Text style={styles.labelText}>Fecha</Text>
+          </View>
+          <TouchableOpacity style={styles.input} onPress={handleDatePicker}>
+            <Text style={styles.inputText}>{state.fecha.toLocaleString('es-ES', { timeStyle: 'short', dateStyle: 'medium' })}</Text>
+          </TouchableOpacity>
         </View>
-      ))}
-      <View style={styles.section}>
-        <View style={styles.sectionLabel}>
-          <Ionicons name='list' size={16} style={{ marginRight: 5 }} />
-          <Text style={styles.labelText}>Tipo</Text>
-        </View>
-        <TouchableOpacity
-          onPress={() => handleFocus('tiposActuaciones')}
-          style={styles.input}
-        >
-          <Text style={{ color: 'gray', fontSize: 18, fontWeight: '400' }}>
-            {state.tipoActuacion || 'Seleccionar...'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.section}>
-        <View style={styles.sectionLabel}>
-          <Ionicons name='pricetag' size={16} style={{ marginRight: 5 }} />
-          <Text style={styles.labelText}>Tag</Text>
-        </View>
-        <TouchableOpacity
-          onPress={() => handleFocus('tagsActuaciones')}
-          style={styles.input}
-        >
-          <Text style={{ color: 'gray', fontSize: 18, fontWeight: '400' }}>
-            {state.tipoActuacion || 'Seleccionar...'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-      {isPickerVisible && (
-        <InputAccessoryView style={{ marginBottom: 50 }} nativeID={fieldToUpdate.current}>
-          <Picker
-            selectedValue={state[fieldToUpdate.current as keyof Actuacion]}
-            onValueChange={(value: any) => {
-              handleChangeText(fieldToUpdate.current, value);
-              setPickerVisible(false); // Ocultar el picker al seleccionar un valor
-            }}
+
+        {/* Tipo actuación */}
+        <View style={styles.section}>
+          <View style={styles.sectionLabel}>
+            <Ionicons name='list' size={16} style={{ marginRight: 5 }} />
+            <Text style={styles.labelText}>Tipo</Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => handlePicker('tipoActuacion')}
+            style={styles.input}
           >
-            {dictionary[fieldToUpdate.current].map((tipo: any) => (
-              <Picker.Item color='black' key={tipo.label} label={tipo.label} value={tipo.value} />
-            ))}
-          </Picker>
-        </InputAccessoryView>
-      )}
-    </View>
+            <Text style={styles.inputText}>
+              {state.tipoActuacion || 'Seleccionar...'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Tag actuación */}
+        <View style={styles.section}>
+          <View style={styles.sectionLabel}>
+            <Ionicons name='pricetag' size={16} style={{ marginRight: 5 }} />
+            <Text style={styles.labelText}>Tag</Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => handlePicker('tagActuacion')}
+            style={styles.input}
+          >
+            <Text style={styles.inputText}>
+              {state.tagActuacion || 'Seleccionar...'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Date picker */}
+        <DateTimePicker
+          testID="dateTimePicker"
+          value={state.fecha}
+          mode={'datetime'}
+          onChange={() => console.log('here2')}
+        />
+      </View>
+    </SafeAreaView>
   )
 }
 export default create
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 10,
     marginHorizontal: 10,
     marginTop: 5,
@@ -144,4 +167,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '400',
   },
+  inputText: { color: 'gray', fontSize: 18, fontWeight: '400' }
 });

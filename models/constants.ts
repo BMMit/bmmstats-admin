@@ -1,5 +1,5 @@
 export const dictionary: any = {
-  tagsActuaciones: [
+  tagActuacion: [
     {
       label: "SSanta",
       value: "Semana Santa",
@@ -16,7 +16,7 @@ export const dictionary: any = {
       uncheckedColor: 'black'
     }
   ],
-  tiposActuaciones: [
+  tipoActuacion: [
     {
       label: "Procesión",
       value: "Procesión",
