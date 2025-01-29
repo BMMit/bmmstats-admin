@@ -5,7 +5,8 @@ import { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, ActionSheetIOS, Pressable, Keyboard, SafeAreaView } from 'react-native'
 import { dictionary } from '@/models/constants';
 import DateTimePicker from '@react-native-community/datetimepicker';
-
+import { Image } from 'expo-image';
+const defaultImage = require('@/assets/images/favicon.png')
 
 const create = () => {
 
@@ -24,8 +25,6 @@ const create = () => {
     coverImage: ""
   });
 
-  const [datePickerVisible, setDatePickerVisible] = useState(false)
-
   const fields = [
     { name: 'organizador1', label: 'Organizador', icon: 'person' },
     { name: 'organizador2', label: 'Organizador 2', icon: 'person-outline' },
@@ -34,16 +33,21 @@ const create = () => {
   ]
   const tags = ['Cancelar', 'Semana Santa', 'Glorias', 'Extraordinaria']
   const tipos = ['Cancelar', 'Procesión', 'Concierto', 'Pregón']
+  const blurhash = '00IEtj'
 
   const handleChangeText = (name: string, value: string | Date) => {
     setState({ ...state, [name]: value });
   };
 
   const handlePicker = (field: string) => {
+    Keyboard.dismiss()
     ActionSheetIOS.showActionSheetWithOptions(
       {
         options: field === 'tagActuacion' ? tags : tipos,
-        cancelButtonIndex: 0
+        cancelButtonIndex: 0,
+        tintColor: 'black',
+        title: field === 'tagActuacion' ? 'Tag de actuación' : 'Tipo de actuación',
+
       },
       buttonIndex => {
         if (buttonIndex !== 0) {
@@ -53,19 +57,41 @@ const create = () => {
     )
   }
 
-  const handleDatePicker = () => {
-    Keyboard.dismiss()
-    setDatePickerVisible(true)
+  // TODO
+  // handleImagePicker
+
+  const handleDatePicker = (date: Date) => {
+    setState({...state, 'fecha': date})
   }
 
+  const handleSave = () => {
+    console.log(state);
+  }
+
+  const headerRight = () => {
+    return (
+      <Pressable style={styles.saveButton} onPress={handleSave}>
+        <Text style={styles.saveButtonText}>Crear</Text>
+      </Pressable>
+    )
+  }
+  
   return (
     <SafeAreaView>
+      <Stack.Screen options={{headerRight: () => headerRight()}} />
       <View style={styles.container}>
-        <TextInput
-          style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 5 }}
-          placeholder='Nueva actuación' autoFocus placeholderTextColor='gray'
-          onChangeText={(value) => handleChangeText('concepto', value)}
-        />
+        <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10}}>
+          <Image 
+          source={{uri: state.coverImage}} 
+          placeholder={{blurhash}} 
+          style={{zIndex: 2, height: 40, width: 40, borderRadius: 40}} />
+          <TextInput
+            // onPress={handleImagePicker} TODO
+            style={{ fontSize: 24, fontWeight: 'bold'}}
+            placeholder='Nueva actuación' autoFocus placeholderTextColor='gray'
+            onChangeText={(value) => handleChangeText('concepto', value)}
+          />
+        </View>
 
         {/* Text fields */}
         {fields.map((field) => (
@@ -89,9 +115,15 @@ const create = () => {
             <Ionicons name='calendar' size={16} style={{ marginRight: 5 }} />
             <Text style={styles.labelText}>Fecha</Text>
           </View>
-          <TouchableOpacity style={styles.input} onPress={handleDatePicker}>
-            <Text style={styles.inputText}>{state.fecha.toLocaleString('es-ES', { timeStyle: 'short', dateStyle: 'medium' })}</Text>
-          </TouchableOpacity>
+          <View style={[styles.input, {alignContent: 'flex-start'}]}>
+            <DateTimePicker
+              style={{start: 0}}
+              testID="dateTimePicker"
+              value={state.fecha}
+              mode={'datetime'}
+              onChange={(value) => handleDatePicker(new Date(value.nativeEvent.timestamp))}
+            />
+          </View>
         </View>
 
         {/* Tipo actuación */}
@@ -125,14 +157,6 @@ const create = () => {
             </Text>
           </TouchableOpacity>
         </View>
-
-        {/* Date picker */}
-        <DateTimePicker
-          testID="dateTimePicker"
-          value={state.fecha}
-          mode={'datetime'}
-          onChange={() => console.log('here2')}
-        />
       </View>
     </SafeAreaView>
   )
@@ -143,6 +167,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginHorizontal: 10,
     marginTop: 5,
+    height: '90%',
   },
   section: {
     flexDirection: 'row',
@@ -167,5 +192,21 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '400',
   },
-  inputText: { color: 'gray', fontSize: 18, fontWeight: '400' }
+  inputText: { color: 'gray', fontSize: 18, fontWeight: '400' },
+  saveButton: {
+    display: 'flex',
+    flexDirection: 'row',
+    backgroundColor: '#18181b',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#fafafa',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignContent: 'center',
+  },
+  saveButtonText: {
+    color: '#fafafa',
+    fontWeight: 500,
+  }
 });
