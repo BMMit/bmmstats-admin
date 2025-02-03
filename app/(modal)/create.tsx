@@ -6,7 +6,7 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View, ActionSheetIOS, Pr
 import { dictionary } from '@/models/constants';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Image } from 'expo-image';
-const defaultImage = require('@/assets/images/favicon.png')
+import * as ImagePicker from 'expo-image-picker';
 
 const create = () => {
 
@@ -60,8 +60,28 @@ const create = () => {
   // TODO
   // handleImagePicker
 
+  const handleImagePicker = async () => {
+    console.log('tapped')
+
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images', 'livePhotos'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1
+      })
+
+      if (!result.canceled && result.assets[0].uri) {
+        console.log(result.assets[0].uri)
+      }
+    } catch (error) {
+      console.error(error);
+
+    }
+  }
+
   const handleDatePicker = (date: Date) => {
-    setState({...state, 'fecha': date})
+    setState({ ...state, 'fecha': date })
   }
 
   const handleSave = () => {
@@ -75,19 +95,20 @@ const create = () => {
       </Pressable>
     )
   }
-  
+
   return (
     <SafeAreaView>
-      <Stack.Screen options={{headerRight: () => headerRight()}} />
+      <Stack.Screen options={{ headerRight: () => headerRight() }} />
       <View style={styles.container}>
-        <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10}}>
-          <Image 
-          source={{uri: state.coverImage}} 
-          placeholder={{blurhash}} 
-          style={{zIndex: 2, height: 40, width: 40, borderRadius: 40}} />
+        <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Image
+            onTouchEnd={handleImagePicker}
+            source={{ uri: state.coverImage }}
+            placeholder={{ blurhash }}
+            style={{ zIndex: 2, height: 40, width: 40, borderRadius: 40 }} />
           <TextInput
             // onPress={handleImagePicker} TODO
-            style={{ fontSize: 24, fontWeight: 'bold'}}
+            style={{ fontSize: 24, fontWeight: 'bold' }}
             placeholder='Nueva actuación' autoFocus placeholderTextColor='gray'
             onChangeText={(value) => handleChangeText('concepto', value)}
           />
@@ -115,9 +136,9 @@ const create = () => {
             <Ionicons name='calendar' size={16} style={{ marginRight: 5 }} />
             <Text style={styles.labelText}>Fecha</Text>
           </View>
-          <View style={[styles.input, {alignContent: 'flex-start'}]}>
+          <View style={[styles.input, { alignContent: 'flex-start' }]}>
             <DateTimePicker
-              style={{start: 0}}
+              style={{ start: 0 }}
               testID="dateTimePicker"
               value={state.fecha}
               mode={'datetime'}
