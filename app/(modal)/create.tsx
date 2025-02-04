@@ -1,6 +1,6 @@
 import { Actuacion } from '@/models/interfaces';
 import Ionicons from '@expo/vector-icons/Ionicons'
-import { router, Stack, Tabs } from 'expo-router'
+import { Stack } from 'expo-router'
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, ActionSheetIOS, Pressable, Keyboard, SafeAreaView } from 'react-native'
 import { dictionary } from '@/models/constants';
