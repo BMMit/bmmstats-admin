@@ -1,5 +1,4 @@
-import { Slot, Stack } from "expo-router";
-import List from "./list";
+import List from "../../components/list";
 
 export default function Index() {
   return (

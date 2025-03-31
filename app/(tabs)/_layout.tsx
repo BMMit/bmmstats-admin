@@ -4,7 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 const TabsLayout = () => {
   return (
     <Tabs >
-      <Tabs.Screen name='list' options={{ title: 'Create', href: null }} />
+      {/* <Tabs.Screen name='list' options={{ title: 'Create' }} /> */}
       <Tabs.Screen name='index' options={{ title: '', href: null }} />
       <Tabs.Screen name='create' options={{
         title: 'Create',

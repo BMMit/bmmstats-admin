@@ -7,6 +7,7 @@ import { dictionary } from '@/models/constants';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
+import { convertJPGtoWEBP } from '@/helpers/utils';
 
 const create = () => {
 
@@ -73,6 +74,13 @@ const create = () => {
 
       if (!result.canceled && result.assets[0].uri) {
         console.log(result.assets[0].uri)
+        try {
+          const converted = await convertJPGtoWEBP(result.assets[0].uri)
+          console.log(converted);
+
+        } catch (error) {
+          console.log(error)
+        }
       }
     } catch (error) {
       console.error(error);
